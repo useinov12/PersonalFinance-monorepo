@@ -6,13 +6,14 @@ import {
   CountryCode,
   Products,
 } from "plaid";
+import { env } from "../env/client.mjs";
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments.sandbox,
   baseOptions: {
     headers: {
-      "PLAID-CLIENT-ID": "6431cba87d50780013ff9d8f",
-      "PLAID-SECRET": "082ece4b36c17f12018037196d4320",
+      "PLAID-CLIENT-ID": env.NEXT_PUBLIC_PLAID_CLIENT_ID,
+      "PLAID-SECRET": env.NEXT_PUBLIC_PLAID_CLIENT_SECRET,
     },
   },
 });

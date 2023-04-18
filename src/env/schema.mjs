@@ -53,6 +53,8 @@ export const serverEnv = {
 export const clientSchema = z.object({
   // NEXT_PUBLIC_CLIENTVAR: z.string(),
   NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV: z.string().url(),
+  NEXT_PUBLIC_PLAID_CLIENT_ID: z.string(),
+  NEXT_PUBLIC_PLAID_CLIENT_SECRET: z.string(),
 });
 
 /**
@@ -64,5 +66,7 @@ export const clientSchema = z.object({
 export const clientEnv = {
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV: process.env.NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV,
+  NEXT_PUBLIC_PLAID_CLIENT_ID: process.env.NEXT_PUBLIC_PLAID_CLIENT_ID,
+  NEXT_PUBLIC_PLAID_CLIENT_SECRET: process.env.NEXT_PUBLIC_PLAID_CLIENT_SECRET
   // NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV: 'http://localhost:3000/oauth',
 };
