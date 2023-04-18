@@ -22,6 +22,7 @@
     "plaid": "^12.5.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-plaid-link": "^3.4.0",
     "superjson": "1.9.1",
     "zod": "^3.20.2"
   },

@@ -1,6 +1,17 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+
+// docs for shadow DB in cloud hosted database
+// https://www.prisma.io/docs/concepts/components/prisma-migrate/shadow-database#cloud-hosted-shadow-databases-must-be-created-manually
+
+// * tldr shadow DB in cloud hosted database
+// If you are developing against a cloud-based database 
+// (for example, on Heroku) and are currently prototyping such that you 
+// don't care about generated migration files and only need to apply your 
+// Prisma data model to the database schema, you can run prisma db push instead of the prisma migrate dev command.
+
+
 generator client {
     provider = "prisma-client-js"
 }
@@ -22,20 +33,20 @@ model Example {
 
 // Necessary for Next auth
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
+    id                       String  @id @default(cuid())
+    userId                   String
+    type                     String
+    provider                 String
+    providerAccountId        String
     refresh_token_expires_in Int // the refresh token for github auth
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refresh_token            String? // @db.Text
+    access_token             String? // @db.Text
+    expires_at               Int?
+    token_type               String?
+    scope                    String?
+    id_token                 String? // @db.Text
+    session_state            String?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
 }
@@ -49,13 +60,14 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String     @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    banks         BankItem[]
 }
 
 model VerificationToken {
@@ -64,4 +76,11 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model BankItem {
+    userId      String
+    user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    itemId      String @unique
+    accessToken String
 }
