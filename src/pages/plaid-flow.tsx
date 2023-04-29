@@ -1,5 +1,6 @@
 import Image from "next/image";
 import React, { ReactNode, useCallback } from "react";
+import clsx from "clsx";
 
 import {
   usePlaidLink,
@@ -13,28 +14,28 @@ import { api } from "../utils/api";
 
 export default function PlaidFlowPage() {
   return (
-    <div className="flex h-screen w-screen flex-col items-center gap-8 bg-gray-100 py-8 px-24 text-gray-800">
-      <h1 className="px-2 text-3xl">Plaid API flow example</h1>
-      <section className="flex h-full w-full justify-center gap-10">
-        <div className="h-full w-1/2  items-end justify-start gap-3 py-5">
-          <div className="flex flex-col items-end">
-            <SignIn />
-            <LinkTokenBlock />
-            <ProductRequest />
-          </div>
-        </div>
-        <div className="h-full w-1/2 py-5 px-8">
+    <main className="flex h-screen w-screen flex-col items-start gap-2 bg-gray-100 py-8 px-24 text-gray-800">
+      <h1 className="px-2 text-3xl font-extrabold">
+        Example of Plaid API flow
+      </h1>
+      <div className="flex h-full w-full justify-center gap-10">
+        <section className="h-full w-1/3 py-5 px-8">
           {[0, 0, 0, 0, 0].map((img, i) => (
             <Image
               src={`/link-token-row-${i + 1}.webp`}
               width={400}
-              height={150}
+              height={125}
               alt={`plaid-img-${i}`}
             />
           ))}
-        </div>
-      </section>
-    </div>
+        </section>
+        <section className="flex h-full  w-2/3 flex-col items-start gap-y-5">
+          <SignIn />
+          <LinkTokenBlock />
+          <ProductRequest />
+        </section>
+      </div>
+    </main>
   );
 }
 
@@ -46,12 +47,13 @@ function SignIn() {
   }
 
   return (
-    <div className="flex w-2/3 flex-col items-start gap-1  p-2">
-      <p className=" text-lg">
-        1. Call <strong>/link/token/create</strong> to create a link_token and
-        pass the temporary token to your app's client
+    <div className="flex w-[70%] items-start 2xl:w-3/5 ">
+      <p className="text-md w-2/3 font-medium leading-[1.2]">
+        The Plaid flow begins when your user wants to connect their bank account
+        to your app
       </p>
-      <div className="flex w-full items-center justify-end gap-4 px-8">
+
+      <div className="flex w-1/3  items-end justify-end gap-2 px-1">
         <Button onClick={handleSignIn}>
           {sessionData ? "Sign out" : "Sign in"}
         </Button>
@@ -60,13 +62,13 @@ function SignIn() {
             <Image
               src={sessionData.user.image}
               alt="user"
-              width={60}
-              height={60}
-              className="rounded-full"
+              width={66}
+              height={66}
+              className="rounded-2xl shadow-md"
             />
           )
         ) : (
-          <span className="h-14 w-14 rounded-full bg-gray-400" />
+          <span className="h-16 w-16 rounded-2xl bg-gray-500/50 shadow-md" />
         )}
       </div>
     </div>
@@ -74,6 +76,7 @@ function SignIn() {
 }
 
 function LinkTokenBlock() {
+  const session = useSession();
   const linkToken = api.plaid.createLinkToken.useQuery(undefined, {
     refetchOnWindowFocus: false,
     enabled: false, // disable this query from automatically running
@@ -83,18 +86,24 @@ function LinkTokenBlock() {
   }
   return (
     <>
-      <section className="flex h-56 w-2/3  flex-col items-start gap-1 p-2">
-        <p className=" text-lg">
-          2. Use the link_token to open Link for your user. In the onSuccess
-          callback, Link will provide a temporary public_token
+      <Block className="h-44">
+        <p className="w-2/3 text-sm font-medium leading-[1.2]">
+          1. Call <strong>/link/token/create</strong> to create a link_token and
+          pass the temporary token to your app's client <br />
         </p>
         <div className="flex w-full items-start gap-4 px-2">
-          <Button onClick={handleFetchToken}>
-            {linkToken.isFetching ? "...fetching" : "Create Link Token"}
+          <Button
+            onClick={handleFetchToken}
+            disabled={!session.data ? true : false}
+          >
+            Create Link Token
           </Button>
-          {linkToken.data && linkToken.isSuccess && (
+          {session.status === "authenticated" &&
+            linkToken.isFetching &&
+            "...fetching"}
+          {linkToken.data && linkToken.isSuccess && !linkToken.isFetching && (
             <>
-              <code className="w-4/5 break-words text-[0.75rem]">
+              <code className="w-4/5 break-words text-sm">
                 {/* {JSON.stringify(linkToken.data)} */}
                 <div>"expiration" : {linkToken.data.expiration}</div>
                 <div>"link_token" : {linkToken.data.link_token}</div>
@@ -109,25 +118,34 @@ function LinkTokenBlock() {
             </>
           )}
         </div>
-      </section>
-      <section className="flex h-36 w-2/3  flex-col items-start gap-1 p-2">
-        <p className=" text-lg">
+      </Block>
+      <Block className="h-38">
+        <p className=" w-2/3 text-sm font-medium leading-[1.2]">
+          2. Use the <code>link_token</code> to open Pliad UI for your user. In
+          the onSuccess callback, PlaidLink will provide a temporary{" "}
+          <code>public_token</code>
+        </p>
+
+        <div className="flex w-full items-center gap-3 px-2">
+          <span className="w-4/5 text-[0.75rem]"></span>
+
+          <PlaidLink
+            linkToken={linkToken.data ? linkToken.data.link_token : undefined}
+          />
+        </div>
+
+        <p className=" w-2/3 text-sm font-medium leading-[1.2]">
           3. Call <strong>/item/public_token/exchange</strong> to exchange the
           public_token for a permanent <code>access_token</code> and{" "}
           <code>item_id</code> for the new Item
         </p>
-        <div className="flex w-full items-center gap-3 px-2">
-          <span className="w-4/5 text-[0.75rem]"></span>
-          {linkToken.data && linkToken.isSuccess && (
-            <PliadLink linkToken={linkToken.data.link_token} />
-          )}
-        </div>
-      </section>
+      </Block>
     </>
   );
 }
 
 function ProductRequest() {
+  const session = useSession();
   const banks = api.plaid.getConnectedBanks.useQuery(undefined, {
     refetchOnWindowFocus: false,
     enabled: false, // disable this query from automatically running
@@ -136,22 +154,53 @@ function ProductRequest() {
     banks.refetch().catch((e) => console.error(e));
   }
   return (
-    <div className="flex w-2/3  flex-col items-start gap-1 p-2">
-      <p className="text-lg">
+    <Block className="h-44">
+      <p className="w-2/3 text-sm font-medium leading-[1.2]">
         4. Store the access_token and use it to make product requests for your
         user's Item
       </p>
       <div className="flex w-full items-start gap-3 px-2">
-        <Button onClick={handleGetBanks}>Get Connected Banks</Button>
+        <Button
+          onClick={handleGetBanks}
+          disabled={!session.data ? true : false}
+        >
+          Get Connected Banks
+        </Button>
         {banks.data && banks.isSuccess && (
-          <code className="w-2/3  break-words text-[0.75rem]">
-            {JSON.stringify(banks.data.connectedBanks)}
+          <code className="w-3/5 break-words text-sm">
+            {banks.data.connectedBanks.map(
+              (bank, i) =>
+                i < 3 && (
+                  <div className="truncate hover:text-clip" key={i}>{`id#${
+                    i + 1
+                  }:${bank}`}</div>
+                )
+            )}
             {/* ["x8DzxW5Kogfr33E44K5xuee5jDvlGAunyV87V",
           "ylMLj5XpNEUZygJdX8DECJgvjjzb7Wuy1DJdB",
           "bdPoGZLB3LUlq9gjW1RKUowvG5jRX5um1b5zy"] */}
           </code>
         )}
       </div>
+    </Block>
+  );
+}
+
+function Block({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={clsx(
+        "flex  w-[70%] flex-col items-start gap-y-3 rounded-xl border border-gray-700/20 bg-gray-100 p-4 shadow-lg 2xl:w-3/5",
+        className
+      )}
+    >
+      {children}
     </div>
   );
 }
@@ -159,25 +208,36 @@ function ProductRequest() {
 function Button({
   children,
   onClick,
+  className,
+  disabled,
 }: {
   children: ReactNode;
   onClick: () => void;
+  className?: string;
+  disabled?: boolean | undefined;
 }) {
   return (
     <button
       onClick={onClick}
-      className="whitespace-nowrap rounded-md bg-gray-900/80 px-5 py-1 text-white no-underline transition hover:bg-gray-900/70"
+      className={clsx(
+        "text-md whitespace-nowrap rounded-md  px-5 py-2 text-white no-underline transition ",
+        "shadow-md",
+        disabled
+          ? "cursor-not-allowed bg-gray-400 hover:bg-gray-400/90"
+          : "bg-sky-600 hover:bg-gray-700",
+        className
+      )}
     >
       {children}
     </button>
   );
 }
 
-interface LinkProps {
-  linkToken: string;
+interface PlaidLinkProps {
+  linkToken?: string;
 }
 
-function PliadLink(props: LinkProps) {
+function PlaidLink(props: PlaidLinkProps) {
   const mutation = api.plaid.exchangeTokens.useMutation();
 
   const onSuccess = useCallback<PlaidLinkOnSuccess>(
@@ -192,22 +252,19 @@ function PliadLink(props: LinkProps) {
   }, []);
 
   const config: PlaidLinkOptionsWithLinkToken = {
-    token: props.linkToken,
+    token: props.linkToken ? props.linkToken : null,
     // receivedRedirectUri: env.NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV, // only for link re-initialization
     onSuccess,
     onEvent,
   };
+  const plaidUI = usePlaidLink(config);
 
   function hanldeOpenPlaidUI() {
     plaidUI.open();
   }
 
-  const plaidUI = usePlaidLink(config);
   return (
-    <Button
-      onClick={hanldeOpenPlaidUI}
-      // disabled={!plaidUI.ready}
-    >
+    <Button onClick={hanldeOpenPlaidUI} disabled={!plaidUI.ready}>
       Open Plaid UI
     </Button>
   );
