@@ -14,22 +14,22 @@ import { api } from "../utils/api";
 
 export default function PlaidFlowPage() {
   return (
-    <main className="flex h-screen w-screen flex-col items-start gap-2 bg-gray-100 py-8 px-24 text-gray-800">
+    <main className="flex h-screen w-screen flex-col items-start gap-2 bg-gray-100 py-8 px-10  text-gray-800 2xl:px-24 overflow-y-hidden">
       <h1 className="px-2 text-3xl font-extrabold">
         Example of Plaid API flow
       </h1>
-      <div className="flex h-full w-full justify-center gap-10">
-        <section className="h-full w-1/3 py-5 px-8">
+      <div className="flex h-full w-full justify-center gap-10 2xl:w-2/3 ">
+        <section className="h-full w-1/3 py-5 px-8 ">
           {[0, 0, 0, 0, 0].map((img, i) => (
             <Image
               src={`/link-token-row-${i + 1}.webp`}
               width={400}
-              height={125}
+              height={200}
               alt={`plaid-img-${i}`}
             />
           ))}
         </section>
-        <section className="flex h-full  w-2/3 flex-col items-start gap-y-5">
+        <section className="flex h-full  w-2/3 flex-col  items-start gap-y-5 2xl:w-2/3">
           <SignIn />
           <LinkTokenBlock />
           <ProductRequest />
@@ -47,13 +47,13 @@ function SignIn() {
   }
 
   return (
-    <div className="flex w-[70%] items-start 2xl:w-3/5 ">
-      <p className="text-md w-2/3 font-medium leading-[1.2]">
+    <div className="flex w-full items-start xl:w-4/5">
+      <p className="text-md w-2/3 font-medium leading-[1.2] 2xl:text-lg">
         The Plaid flow begins when your user wants to connect their bank account
         to your app
       </p>
 
-      <div className="flex w-1/3  items-end justify-end gap-2 px-1">
+      <div className="flex w-1/3  items-end justify-end gap-2 px-1 ">
         <Button onClick={handleSignIn}>
           {sessionData ? "Sign out" : "Sign in"}
         </Button>
@@ -87,7 +87,7 @@ function LinkTokenBlock() {
   return (
     <>
       <Block className="h-44">
-        <p className="w-2/3 text-sm font-medium leading-[1.2]">
+        <p className="w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
           1. Call <strong>/link/token/create</strong> to create a link_token and
           pass the temporary token to your app's client <br />
         </p>
@@ -120,7 +120,7 @@ function LinkTokenBlock() {
         </div>
       </Block>
       <Block className="h-38">
-        <p className=" w-2/3 text-sm font-medium leading-[1.2]">
+        <p className=" w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
           2. Use the <code>link_token</code> to open Pliad UI for your user. In
           the onSuccess callback, PlaidLink will provide a temporary{" "}
           <code>public_token</code>
@@ -134,7 +134,7 @@ function LinkTokenBlock() {
           />
         </div>
 
-        <p className=" w-2/3 text-sm font-medium leading-[1.2]">
+        <p className=" w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
           3. Call <strong>/item/public_token/exchange</strong> to exchange the
           public_token for a permanent <code>access_token</code> and{" "}
           <code>item_id</code> for the new Item
@@ -155,7 +155,7 @@ function ProductRequest() {
   }
   return (
     <Block className="h-44">
-      <p className="w-2/3 text-sm font-medium leading-[1.2]">
+      <p className="w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
         4. Store the access_token and use it to make product requests for your
         user's Item
       </p>
@@ -196,7 +196,7 @@ function Block({
   return (
     <div
       className={clsx(
-        "flex  w-[70%] flex-col items-start gap-y-3 rounded-xl border border-gray-700/20 bg-gray-100 p-4 shadow-lg 2xl:w-3/5",
+        "flex w-full   flex-col items-start gap-y-3 rounded-xl border border-gray-700/20 bg-gray-100 p-4 shadow-lg  xl:w-4/5 ",
         className
       )}
     >
