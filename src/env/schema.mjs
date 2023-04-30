@@ -17,14 +17,14 @@ export const serverSchema = z.object({
     // Since NextAuth.js automatically uses the VERCEL_URL if present.
     (str) => process.env.VERCEL_URL ?? str,
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
-    process.env.VERCEL ? z.string() : z.string().url(),
+    process.env.VERCEL ? z.string() : z.string().url()
   ),
   // DISCORD_CLIENT_ID: z.string(),
   // DISCORD_CLIENT_SECRET: z.string(),
   GITHUB_ID: z.string(),
-  GITHUB_SECRET:z.string(),
+  GITHUB_SECRET: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string()
+  GOOGLE_CLIENT_SECRET: z.string(),
 });
 
 /**
@@ -53,8 +53,15 @@ export const serverEnv = {
 export const clientSchema = z.object({
   // NEXT_PUBLIC_CLIENTVAR: z.string(),
   NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV: z.string().url(),
-  NEXT_PUBLIC_PLAID_CLIENT_ID: z.string(),
-  NEXT_PUBLIC_PLAID_CLIENT_SECRET: z.string(),
+  // plaid sandbox variables
+  NEXT_PUBLIC_PLAID_SANDBOX_CLIENT_ID: z.string(),
+  NEXT_PUBLIC_PLAID_SANDBOX_CLIENT_SECRET: z.string(),
+  // plaid developement variables
+  NEXT_PUBLIC_PLAID_DEVELOPMENT_CLIENT_ID: z.string(),
+  NEXT_PUBLIC_PLAID_DEVELOPMENT_CLIENT_SECRET: z.string(),
+  // plaid production variables
+  NEXT_PUBLIC_PLAID_PRODUCTION_CLIENT_ID: z.string(),
+  NEXT_PUBLIC_PLAID_PRODUCTION_CLIENT_SECRET: z.string(),
 });
 
 /**
@@ -65,8 +72,22 @@ export const clientSchema = z.object({
  */
 export const clientEnv = {
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
-  NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV: process.env.NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV,
-  NEXT_PUBLIC_PLAID_CLIENT_ID: process.env.NEXT_PUBLIC_PLAID_CLIENT_ID,
-  NEXT_PUBLIC_PLAID_CLIENT_SECRET: process.env.NEXT_PUBLIC_PLAID_CLIENT_SECRET
+  NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV:
+    process.env.NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV,
+  // plaid sandbox variables
+  NEXT_PUBLIC_PLAID_SANDBOX_CLIENT_ID:
+    process.env.NEXT_PUBLIC_PLAID_SANDBOX_CLIENT_ID,
+  NEXT_PUBLIC_PLAID_SANDBOX_CLIENT_SECRET:
+    process.env.NEXT_PUBLIC_PLAID_SANDBOX_CLIENT_SECRET,
+  // plaid developement variables
+  NEXT_PUBLIC_PLAID_DEVELOPMENT_CLIENT_ID:
+    process.env.NEXT_PUBLIC_PLAID_DEVELOPMENT_CLIENT_ID,
+  NEXT_PUBLIC_PLAID_DEVELOPMENT_CLIENT_SECRET:
+    process.env.NEXT_PUBLIC_PLAID_DEVELOPMENT_CLIENT_SECRET,
+  // plaid production variables
+  NEXT_PUBLIC_PLAID_PRODUCTION_CLIENT_ID:
+    process.env.NEXT_PUBLIC_PLAID_PRODUCTION_CLIENT_ID,
+  NEXT_PUBLIC_PLAID_PRODUCTION_CLIENT_SECRET:
+    process.env.NEXT_PUBLIC_PLAID_PRODUCTION_CLIENT_SECRET,
   // NEXT_PUBLIC_PLAID_REDIRECT_URI_DEV: 'http://localhost:3000/oauth',
 };
