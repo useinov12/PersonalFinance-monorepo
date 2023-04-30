@@ -1,6 +1,7 @@
 import Image from "next/image";
-import React, { ReactNode, useCallback } from "react";
+import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
+import Button from "../ui/Button";
 
 import {
   usePlaidLink,
@@ -11,15 +12,16 @@ import {
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import { api } from "../utils/api";
+import { plaidClient } from "../server/plaidConfig";
 
 export default function PlaidFlowPage() {
   return (
-    <main className="flex h-screen w-screen flex-col items-start gap-2 bg-gray-100 py-8 px-10  text-gray-800 2xl:px-24 overflow-y-hidden">
+    <main className="flex h-screen w-screen flex-col items-start gap-2 overflow-y-hidden bg-gray-100 py-8  px-10 text-gray-800 2xl:px-24 ">
       <h1 className="px-2 text-3xl font-extrabold">
         Example of Plaid API flow
       </h1>
-      <div className="flex h-full w-full justify-center gap-10 2xl:w-2/3 ">
-        <section className="h-full w-1/3 py-5 px-8 ">
+      <div className="flex h-full w-full max-w-7xl  justify-center 2xl:w-4/5">
+        <section className="h-full w-1/3 py-5 px-8 2xl:w-1/2 ">
           {[0, 0, 0, 0, 0].map((img, i) => (
             <Image
               src={`/link-token-row-${i + 1}.webp`}
@@ -29,8 +31,9 @@ export default function PlaidFlowPage() {
             />
           ))}
         </section>
-        <section className="flex h-full  w-2/3 flex-col  items-start gap-y-5 2xl:w-2/3">
+        <section className="flex h-full  w-2/3  flex-col  items-start gap-y-3 2xl:w-1/2 ">
           <SignIn />
+          <SwitchEnvironment />
           <LinkTokenBlock />
           <ProductRequest />
         </section>
@@ -47,7 +50,7 @@ function SignIn() {
   }
 
   return (
-    <div className="flex w-full items-start xl:w-4/5">
+    <div className="flex w-full items-start xl:w-4/5 2xl:w-full">
       <p className="text-md w-2/3 font-medium leading-[1.2] 2xl:text-lg">
         The Plaid flow begins when your user wants to connect their bank account
         to your app
@@ -75,6 +78,39 @@ function SignIn() {
   );
 }
 
+function SwitchEnvironment() {
+  const [currentEnvironment, setCurrentEnvironment] = useState(
+    plaidClient.currentEnvironment
+  );
+
+  const handleEnvironmentChange = (
+    environment: "sandbox" | "development" | "production"
+  ) => {
+    plaidClient.setConfigEnvironment(environment);
+    setCurrentEnvironment(environment);
+  };
+
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        onClick={() => handleEnvironmentChange("sandbox")}
+        className="py-1"
+        variant={currentEnvironment === "sandbox" ? "green" : "light"}
+      >
+        sandbox
+      </Button>
+      <Button
+        onClick={() => handleEnvironmentChange("development")}
+        className="py-1"
+        variant={currentEnvironment === "development" ? "green" : "light"}
+      >
+        development
+      </Button>
+    </div>
+  );
+}
+
 function LinkTokenBlock() {
   const session = useSession();
   const linkToken = api.plaid.createLinkToken.useQuery(undefined, {
@@ -87,7 +123,7 @@ function LinkTokenBlock() {
   return (
     <>
       <Block className="h-44">
-        <p className="w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
+        <p className="w-2/3 text-sm font-medium leading-[1.2] 2xl:w-4/5 2xl:text-lg">
           1. Call <strong>/link/token/create</strong> to create a link_token and
           pass the temporary token to your app's client <br />
         </p>
@@ -120,7 +156,7 @@ function LinkTokenBlock() {
         </div>
       </Block>
       <Block className="h-38">
-        <p className=" w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
+        <p className=" w-2/3 text-sm font-medium leading-[1.2] 2xl:w-4/5 2xl:text-lg">
           2. Use the <code>link_token</code> to open Pliad UI for your user. In
           the onSuccess callback, PlaidLink will provide a temporary{" "}
           <code>public_token</code>
@@ -134,7 +170,7 @@ function LinkTokenBlock() {
           />
         </div>
 
-        <p className=" w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
+        <p className=" w-2/3 text-sm font-medium leading-[1.2] 2xl:w-4/5 2xl:text-lg">
           3. Call <strong>/item/public_token/exchange</strong> to exchange the
           public_token for a permanent <code>access_token</code> and{" "}
           <code>item_id</code> for the new Item
@@ -155,7 +191,7 @@ function ProductRequest() {
   }
   return (
     <Block className="h-44">
-      <p className="w-2/3 text-sm font-medium leading-[1.2] 2xl:text-lg">
+      <p className="w-2/3 text-sm font-medium leading-[1.2] 2xl:w-4/5 2xl:text-lg">
         4. Store the access_token and use it to make product requests for your
         user's Item
       </p>
@@ -196,7 +232,7 @@ function Block({
   return (
     <div
       className={clsx(
-        "flex w-full   flex-col items-start gap-y-3 rounded-xl border border-gray-700/20 bg-gray-100 p-4 shadow-lg  xl:w-4/5 ",
+        "flex w-full   flex-col items-start gap-y-3 rounded-xl border border-gray-700/20 bg-gray-100 p-4 shadow-lg  xl:w-4/5 2xl:w-full ",
         className
       )}
     >
@@ -205,33 +241,44 @@ function Block({
   );
 }
 
-function Button({
-  children,
-  onClick,
-  className,
-  disabled,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  className?: string;
-  disabled?: boolean | undefined;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        "text-md whitespace-nowrap rounded-md  px-5 py-2 text-white no-underline transition ",
-        "shadow-md",
-        disabled
-          ? "cursor-not-allowed bg-gray-400 hover:bg-gray-400/90"
-          : "bg-sky-600 hover:bg-gray-700",
-        className
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+// function Button({
+//   children,
+//   onClick,
+//   className,
+//   disabled,
+//   active,
+//   type,
+// }: {
+//   children: ReactNode;
+//   onClick: () => void;
+//   className?: string;
+//   disabled?: boolean | undefined;
+//   active?: boolean | undefined;
+//   type?: "regular" | "green" | "warning" | "danger";
+// }) {
+//   return (
+//     <button
+//       onClick={onClick}
+//       className={clsx(
+//         "text-md whitespace-nowrap rounded-md  px-5 py-2 text-white no-underline transition ",
+//         "shadow-md",
+//         !type &&
+//           "bg-sky-500 hover:bg-sky-600 focus:ring-sky-400 active:bg-sky-700",
+//         type === "regular"
+//           ? "bg-sky-500 hover:bg-sky-600 focus:ring-sky-400 active:bg-sky-700"
+//           : type === "green"
+//           ? "bg-green-500 hover:bg-green-600 focus:ring-green-400 active:bg-green-700"
+//           : type === "warning"
+//           ? "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400 active:bg-yellow-700"
+//           : "bg-red-500 hover:bg-red-600 focus:ring-red-400 active:bg-red-700",
+//         disabled && "cursor-not-allowed bg-gray-400 hover:bg-gray-400/90",
+//         className
+//       )}
+//     >
+//       {children}
+//     </button>
+//   );
+// }
 
 interface PlaidLinkProps {
   linkToken?: string;

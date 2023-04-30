@@ -18,6 +18,7 @@
     "@trpc/react-query": "^10.9.0",
     "@trpc/server": "^10.9.0",
     "clsx": "^1.2.1",
+    "css-loader": "^6.7.3",
     "next": "13.1.6",
     "next-auth": "^4.19.0",
     "plaid": "^12.5.0",
