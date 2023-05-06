@@ -9,7 +9,9 @@ export const plaidRouter = createTRPCRouter({
     const userId = session.user.id;
     const request = createPlaidRequestConfig(userId);
     try {
-      const createTokenResponse = await plaidClient.linkTokenCreate(request);
+      const createTokenResponse = await plaidClient.instance.linkTokenCreate(
+        request
+      );
       return createTokenResponse.data;
       //   createTokenResponse.json(createTokenResponse.data);
     } catch (error) {
@@ -22,7 +24,7 @@ export const plaidRouter = createTRPCRouter({
     .input(z.object({ publicToken: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { prisma, session } = ctx;
-      const response = await plaidClient.itemPublicTokenExchange({
+      const response = await plaidClient.instance.itemPublicTokenExchange({
         public_token: input.publicToken,
       });
 
@@ -62,4 +64,8 @@ export const plaidRouter = createTRPCRouter({
       message: "Connected bank item Ids",
     };
   }),
+
+  getBalance: protectedProcedure
+    .input(z.object({ bankId: z.string() }))
+    .query(async ({ ctx, input }) => {}),
 });

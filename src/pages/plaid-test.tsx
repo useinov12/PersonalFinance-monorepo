@@ -1,19 +1,33 @@
 import { api } from "../utils/api";
 
-import React, { useCallback, useEffect } from "react";
+import React, { ReactNode, useCallback } from "react";
 import {
   usePlaidLink,
-  PlaidLinkOnSuccessMetadata,
-  PlaidLinkOnExitMetadata,
-  PlaidLinkError,
   PlaidLinkOptionsWithLinkToken,
-  PlaidLinkOnEventMetadata,
-  PlaidLinkStableEvent,
   PlaidLinkOnSuccess,
   PlaidLinkOnEvent,
 } from "react-plaid-link";
 
+import { signIn, signOut, useSession } from "next-auth/react";
+
 export default function PlaidTestPage() {
+  const { data: sessionData } = useSession();
+  return (
+    <div 
+      className="flex h-screen w-screen flex-col items-center 
+      justify-center gap-y-2 bg-gray-800 text-gray-100"
+    >
+      <Button
+        onClick={sessionData ? () =>  signOut() : () => signIn()}
+      >
+        {sessionData ? "Sign out" : "Sign in"}
+      </Button>
+      {sessionData && <PlaidFlowShowcase />}
+    </div>
+  );
+}
+
+function PlaidFlowShowcase() {
   const linkToken = api.plaid.createLinkToken.useQuery(undefined, {
     refetchOnWindowFocus: false,
     enabled: false, // disable this query from automatically running
@@ -33,34 +47,26 @@ export default function PlaidTestPage() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-black text-gray-100">
-      <button
-        className="my-2 w-fit rounded border px-2"
-        onClick={handleFetchToken}
-      >
+    <>
+      <Button onClick={handleFetchToken}>
         {linkToken.isFetching ? "...loading" : "Create Link Token"}
-      </button>
+      </Button>
       {linkToken.data && linkToken.isSuccess && (
         <>
-          <p className="text-center text-sm">
+          <p className="text-center text-md">
             {JSON.stringify(linkToken.data)}
           </p>
-          <Link linkToken={linkToken.data.link_token} />
+          <PliadLink linkToken={linkToken.data.link_token} />
         </>
       )}
 
-      <button
-        className="my-2 w-fit rounded border px-2"
-        onClick={handleGetBanks}
-      >
-        Get connected banks ID's
-      </button>
+      <Button onClick={handleGetBanks}>Get connected banks ID's</Button>
       {banks.data && banks.isSuccess && (
-        <p className="text-center text-sm">
+        <p className="text-center text-md">
           {JSON.stringify(banks.data.connectedBanks)}
         </p>
       )}
-    </div>
+    </>
   );
 }
 
@@ -68,16 +74,16 @@ interface LinkProps {
   linkToken: string;
 }
 
-// hard typed because PlaidLinkOnSuccess caused Typescript error
-// type onSuccessCB = (public_token: string, metadata: PlaidLinkOnSuccessMetadata) => void
-
-function Link(props: LinkProps) {
+function PliadLink(props: LinkProps) {
   const mutation = api.plaid.exchangeTokens.useMutation();
 
-  const onSuccess = useCallback<PlaidLinkOnSuccess>((public_token, metadata) => {
-    // send public-token to the server to exchange it for access_token and save in DB
-    mutation.mutate({ publicToken: public_token });
-  }, []);
+  const onSuccess = useCallback<PlaidLinkOnSuccess>(
+    (public_token, metadata) => {
+      // send public-token to the server to exchange it for access_token and save in DB
+      mutation.mutate({ publicToken: public_token });
+    },
+    []
+  );
   const onEvent = useCallback<PlaidLinkOnEvent>((public_token, metadata) => {
     console.log("event", public_token, metadata);
   }, []);
@@ -95,12 +101,28 @@ function Link(props: LinkProps) {
 
   const plaidUI = usePlaidLink(config);
   return (
-    <button
-      className="my-2 w-fit rounded border px-2"
+    <Button
       onClick={hanldeOpenPlaidUI}
-      disabled={!plaidUI.ready}
+      // disabled={!plaidUI.ready}
     >
       Open Plaid UI
+    </Button>
+  );
+}
+
+function Button({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="rounded-lg bg-white/10 px-6 py-2 font-semibold text-white no-underline transition hover:bg-white/20"
+    >
+      {children}
     </button>
   );
 }

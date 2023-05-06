@@ -1,6 +1,16 @@
 import { type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useState,
+} from "react";
 
 import { api } from "../utils/api";
 
@@ -12,9 +22,36 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+      <ThemeProvider>
+        <Component {...pageProps} />
+      </ThemeProvider>
     </SessionProvider>
   );
 };
 
 export default api.withTRPC(MyApp);
+
+const ThemeContext = createContext<{
+  theme: "dark" | "light";
+  setTheme: Dispatch<SetStateAction<"dark" | "light">>;
+}>({
+  theme: "dark",
+  setTheme: () => {},
+});
+
+function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  return (
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme,
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export const useTheme = () => useContext(ThemeContext);
